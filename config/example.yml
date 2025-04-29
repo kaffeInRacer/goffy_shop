@@ -1,0 +1,58 @@
+# WARNING:
+# If you change `env.mode` to production or any value other than "local",
+# make sure all related configuration fields below are filled in correctly.
+# Missing or invalid values may cause the application to fail at runtime.
+
+env:
+  mode: local # Set mode: "local" for development, any other value defaults to production
+  time_zone: Asia/Jakarta # Time zone for logs and application (e.g., Asia/Jakarta)
+  time_format: 2006-01-02 15:04:05.00 # Format for log timestamps (Go time layout)
+
+logger:
+  # Ignored if env.mode == "local"; defaults to "debug"
+  log_level:
+  # Ignored if env.mode == "local"; defaults to "./app_logger_local.log"
+  log_file_name:
+
+server:
+  http:
+    # Ignored if env.mode == "local"; defaults to "localhost"
+    host:
+    # Ignored if env.mode == "local"; defaults to 8080
+    port:
+  grpc:
+    # Ignored if env.mode == "local"; defaults to "localhost" ("tcp")
+    host:
+    # Ignored if env.mode == "local"; defaults to 9090
+    port:
+
+security:
+  jwt:
+    # JWT secret key
+    secret: secret
+
+data:
+  postgres:
+    # Ignored if env.mode == "local"; defaults to "localhost"
+    host:
+    # Ignored if env.mode == "local"; defaults to 5432
+    port:
+    # Ignored if env.mode == "local"; defaults to "postgres"
+    user:
+    # Ignored if env.mode == "local"; defaults to "postgres"
+    pass:
+    # Ignored if env.mode == "local"; defaults to "postgres"
+    name:
+  redis:
+    # Ignored if env.mode == "local"; defaults to "localhost"
+    host:
+    # Ignored if env.mode == "local"; defaults to 6372
+    port:
+    # Ignored if env.mode == "local"; defaults to "redis"
+    pass:
+    # Ignored if env.mode == "local"; defaults to 0
+    database:
+    # Timeout for read operations
+    read_timeout:
+    # Timeout for write operations
+    write_timeout:

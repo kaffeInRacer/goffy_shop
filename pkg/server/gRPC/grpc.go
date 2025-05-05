@@ -1,4 +1,4 @@
-package grpc
+package gRPC
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
 	"net"
-	"time"
 )
 
 type Server struct {
@@ -48,7 +47,7 @@ func (s *Server) Start(ctx context.Context) error {
 	s.logger.Info().
 		Str("host", s.host).
 		Int("port", s.port).
-		Msg("Starting Grpc server")
+		Msg("Starting gRPC server")
 
 	if err = s.Server.Serve(lis); err != nil {
 		s.logger.Fatal().Err(err).Msg("failed to serve")
@@ -57,12 +56,20 @@ func (s *Server) Start(ctx context.Context) error {
 	return nil
 
 }
+
 func (s *Server) Stop(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-	s.Server.GracefulStop()
+	done := make(chan struct{})
+	go func() {
+		s.Server.GracefulStop()
+		close(done)
+	}()
 
-	s.logger.Info().Msg("Shutting down Grpc server...")
-
-	return nil
+	select {
+	case <-ctx.Done():
+		s.logger.Error().Msg("Timeout while shutting down gRPC server")
+		return ctx.Err()
+	case <-done:
+		s.logger.Warn().Msg("Shutting down gRPC server...")
+		return nil
+	}
 }

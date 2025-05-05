@@ -4,29 +4,34 @@ import (
 	"context"
 	"github.com/kaffein/goffy/pkg/app"
 	"github.com/kaffein/goffy/pkg/config"
+	"github.com/kaffein/goffy/pkg/db/postgres"
 	"github.com/kaffein/goffy/pkg/logger"
-	grpcServer "github.com/kaffein/goffy/pkg/server/grpc"
+	"github.com/kaffein/goffy/pkg/route"
+	grpcServer "github.com/kaffein/goffy/pkg/server/gRPC"
 	httpServer "github.com/kaffein/goffy/pkg/server/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	config.NewConfig("./config/local.yml")
+	config.LoadConfig("./config/local.yml")
 }
 
 func main() {
 	// Logger config
 	log := logger.NewLogger()
 
-	// Init Gin router
-	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
-	})
+	// (db) PostgreSQL
+	pgSrv := postgres.NewDatabase(log,
+		postgres.WithHost(config.Conf.Database.Postgres.Host),
+		postgres.WithPort(config.Conf.Database.Postgres.Port),
+		postgres.WithUsername(config.Conf.Database.Postgres.User),
+		postgres.WithPassword(config.Conf.Database.Postgres.Password),
+		postgres.WithDBName(config.Conf.Database.Postgres.Name),
+		postgres.WithSSLMode(config.Conf.Database.Postgres.SSL),
+	)
 
 	// HTTP server
-	httpSrv := httpServer.NewServer(router, log,
+	httpSrv := httpServer.NewServer(
+		route.NewRouter(pgSrv.DB), log,
 		httpServer.WithServerHost(config.Conf.Server.HTTP.Host),
 		httpServer.WithServerPort(config.Conf.Server.HTTP.Port),
 	)
@@ -40,7 +45,7 @@ func main() {
 	// Compose app with servers
 	application := app.NewApp(
 		app.WithName("goffy"),
-		app.WithServer(httpSrv, grpcSrv),
+		app.WithServer(httpSrv, grpcSrv, pgSrv),
 	)
 
 	// Run app

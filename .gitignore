@@ -3,7 +3,7 @@
 
 #customize
 .idea/
-!./config/example.yml
+!/config/example.yml
 system_msg.txt
 app_loger.log
 app_logger_local.log

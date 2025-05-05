@@ -29,6 +29,7 @@ func NewServer(engine *gin.Engine, logger *zerolog.Logger, opts ...Option) *Serv
 	for _, opt := range opts {
 		opt(s)
 	}
+
 	return s
 }
 
@@ -46,8 +47,12 @@ func WithServerPort(port int) Option {
 
 func (s *Server) Start(ctx context.Context) error {
 	s.httpSrv = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", s.host, s.port),
-		Handler: s.Engine,
+		Addr:              fmt.Sprintf("%s:%d", s.host, s.port),
+		Handler:           s.Engine,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       120 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	s.logger.Info().
@@ -64,7 +69,7 @@ func (s *Server) Start(ctx context.Context) error {
 }
 
 func (s *Server) Stop(ctx context.Context) error {
-	s.logger.Info().Msg("Shutting down HTTP server...")
+	s.logger.Warn().Msg("Shutting down HTTP server...")
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

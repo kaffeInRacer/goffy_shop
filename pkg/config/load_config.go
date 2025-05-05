@@ -1,16 +1,23 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
-type config struct {
+type Config struct {
 	Env struct {
 		Mode       string `yaml:"mode"`
 		TimeZone   string `yaml:"time_zone"`
 		TimeFormat string `yaml:"time_format"`
-	}
+	} `yaml:"env"`
+
+	Logger struct {
+		LogLevel    string `yaml:"log_level"`
+		LogFileName string `yaml:"log_file_name"`
+	} `yaml:"logger"`
+
 	Server struct {
 		HTTP struct {
 			Host string `yaml:"host"`
@@ -19,66 +26,48 @@ type config struct {
 		GRPC struct {
 			Host string `yaml:"host"`
 			Port int    `yaml:"port"`
-		} `yaml:"grpc"`
+		} `yaml:"gRPC"`
 	} `yaml:"server"`
+
+	Security struct {
+		JWT struct {
+			Secret string `yaml:"secret"`
+		} `yaml:"jwt"`
+	} `yaml:"security"`
+
 	Database struct {
 		Postgres struct {
 			Host     string `yaml:"host"`
 			Port     int    `yaml:"port"`
 			User     string `yaml:"user"`
 			Password string `yaml:"password"`
-			DB       string `yaml:"db"`
+			Name     string `yaml:"name"`
+			SSL      string `yaml:"ssl"`
 		} `yaml:"postgres"`
 		Redis struct {
-			Host     string `yaml:"host"`
-			Port     int    `yaml:"port"`
-			Password string `yaml:"password"`
-			DB       int    `yaml:"db"`
+			Host         string `yaml:"host"`
+			Port         int    `yaml:"port"`
+			Password     string `yaml:"password"`
+			DB           int    `yaml:"db"`
+			ReadTimeout  string `yaml:"read_timeout"`
+			WriteTimeout string `yaml:"write_timeout"`
 		} `yaml:"redis"`
 	} `yaml:"database"`
-	Logger struct {
-		LogLevel    string `yaml:"log_level"`
-		LogFileName string `yaml:"log_file_name"`
-	} `yaml:"logger"`
-	JWT struct {
-		Secret string `yaml:"secret"`
-	} `yaml:"jwt"`
 }
 
-var Conf *config
+var Conf *Config
 
-func NewConfig(path string) {
-	file, _ := os.Open(path)
-
-	defer file.Close()
-
-	decoder := yaml.NewDecoder(file)
-	_ = decoder.Decode(&Conf)
-
-	if Conf.Env.Mode == "local" {
-		// default setup logger
-		Conf.Logger.LogLevel = "debug"
-		Conf.Logger.LogFileName = "app_logger_local.log"
-
-		// default HTTP
-		Conf.Server.HTTP.Port = 8080
-		Conf.Server.HTTP.Host = "localhost"
-
-		// default gRPC
-		Conf.Server.GRPC.Host = "localhost"
-		Conf.Server.GRPC.Port = 9090
-
-		// default postgres
-		Conf.Database.Postgres.Host = "localhost"
-		Conf.Database.Postgres.Port = 5432
-		Conf.Database.Postgres.DB = "postgres"
-		Conf.Database.Postgres.User = "postgres"
-		Conf.Database.Postgres.Password = "postgres"
-
-		// default redis
-		Conf.Database.Redis.Host = "localhost"
-		Conf.Database.Redis.Port = 6372
-		Conf.Database.Redis.Password = "redis"
-		Conf.Database.Redis.DB = 0
+func LoadConfig(path string) (*Config, error) {
+	file, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
 	}
+
+	var cfg Config
+	if err := yaml.Unmarshal(file, &cfg); err != nil {
+		return nil, err
+	}
+
+	Conf = &cfg
+	return &cfg, nil
 }

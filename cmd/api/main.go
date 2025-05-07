@@ -50,7 +50,7 @@ func main() {
 		app.WithName("goffy"),
 		app.WithAdapter(dbPg),
 		app.WithServer(httpSrv, grpcSrv),
-		app.WithRouter(engine), // Menambahkan router
+		app.WithRouter(engine),
 	)
 
 	// Run the application

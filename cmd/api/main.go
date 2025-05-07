@@ -1,12 +1,14 @@
+// main.go
+
 package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/kaffein/goffy/pkg/adapter/postgre"
 	"github.com/kaffein/goffy/pkg/app"
 	"github.com/kaffein/goffy/pkg/config"
-	"github.com/kaffein/goffy/pkg/db/postgres"
 	"github.com/kaffein/goffy/pkg/logger"
-	"github.com/kaffein/goffy/pkg/route"
 	grpcServer "github.com/kaffein/goffy/pkg/server/gRPC"
 	httpServer "github.com/kaffein/goffy/pkg/server/http"
 )
@@ -16,39 +18,42 @@ func init() {
 }
 
 func main() {
-	// Logger config
 	log := logger.NewLogger()
 
-	// (db) PostgreSQL
-	pgSrv := postgres.NewDatabase(log,
-		postgres.WithHost(config.Conf.Database.Postgres.Host),
-		postgres.WithPort(config.Conf.Database.Postgres.Port),
-		postgres.WithUsername(config.Conf.Database.Postgres.User),
-		postgres.WithPassword(config.Conf.Database.Postgres.Password),
-		postgres.WithDBName(config.Conf.Database.Postgres.Name),
-		postgres.WithSSLMode(config.Conf.Database.Postgres.SSL),
+	// engine
+	engine := gin.Default()
+
+	// Setup PostgreSQL
+	dbPg := postgre.NewDatabase(log,
+		postgre.WithHost(config.Conf.Database.Postgres.Host),
+		postgre.WithPort(config.Conf.Database.Postgres.Port),
+		postgre.WithUsername(config.Conf.Database.Postgres.User),
+		postgre.WithPassword(config.Conf.Database.Postgres.Password),
+		postgre.WithDBName(config.Conf.Database.Postgres.Name),
+		postgre.WithSSLMode(config.Conf.Database.Postgres.SSL),
 	)
 
-	// HTTP server
-	httpSrv := httpServer.NewServer(
-		route.NewRouter(pgSrv.DB), log,
+	// Setup HTTP server
+	httpSrv := httpServer.NewServer(engine, log,
 		httpServer.WithServerHost(config.Conf.Server.HTTP.Host),
 		httpServer.WithServerPort(config.Conf.Server.HTTP.Port),
 	)
 
-	// gRPC server
+	// Setup gRPC server
 	grpcSrv := grpcServer.NewServer(log,
 		grpcServer.WithServerHost(config.Conf.Server.GRPC.Host),
 		grpcServer.WithServerPort(config.Conf.Server.GRPC.Port),
 	)
 
-	// Compose app with servers
+	// Create application with all servers, adaptors, and router
 	application := app.NewApp(
 		app.WithName("goffy"),
-		app.WithServer(httpSrv, grpcSrv, pgSrv),
+		app.WithAdapter(dbPg),
+		app.WithServer(httpSrv, grpcSrv),
+		app.WithRouter(engine), // Menambahkan router
 	)
 
-	// Run app
+	// Run the application
 	if err := application.Run(context.Background()); err != nil {
 		log.Fatal().Msg("App exited with error")
 	}

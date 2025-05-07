@@ -49,12 +49,13 @@ func (s *Server) Start(ctx context.Context) error {
 		Int("port", s.port).
 		Msg("Starting gRPC server")
 
-	if err = s.Server.Serve(lis); err != nil {
-		s.logger.Fatal().Err(err).Msg("failed to serve")
-	}
+	go func() {
+		if err = s.Server.Serve(lis); err != nil {
+			s.logger.Fatal().Err(err).Msg("failed to serve")
+		}
+	}()
 
 	return nil
-
 }
 
 func (s *Server) Stop(ctx context.Context) error {

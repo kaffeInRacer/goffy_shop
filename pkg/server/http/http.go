@@ -21,6 +21,10 @@ type Server struct {
 
 type Option func(s *Server)
 
+type RouterAttachable interface {
+	AttachRouter(*gin.Engine)
+}
+
 func NewServer(engine *gin.Engine, logger *zerolog.Logger, opts ...Option) *Server {
 	s := &Server{
 		Engine: engine,
@@ -45,9 +49,14 @@ func WithServerPort(port int) Option {
 	}
 }
 
+func (s *Server) AttachRouter(router *gin.Engine) {
+	s.Engine = router
+}
+
 func (s *Server) Start(ctx context.Context) error {
+	addr := fmt.Sprintf("%s:%d", s.host, s.port)
 	s.httpSrv = &http.Server{
-		Addr:              fmt.Sprintf("%s:%d", s.host, s.port),
+		Addr:              addr,
 		Handler:           s.Engine,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
@@ -60,10 +69,11 @@ func (s *Server) Start(ctx context.Context) error {
 		Int("port", s.port).
 		Msg("Starting HTTP server")
 
-	err := s.httpSrv.ListenAndServe()
-	if err != nil && !errors.Is(err, http.ErrServerClosed) {
-		s.logger.Fatal().Err(err).Msg("Failed to start HTTP server")
-	}
+	go func() {
+		if err := s.httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			s.logger.Fatal().Err(err).Msg("Failed to start HTTP server")
+		}
+	}()
 
 	return nil
 }

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"github.com/kaffein/goffy/pkg/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -13,8 +14,7 @@ func NewLogger() *zerolog.Logger {
 	if err != nil {
 		panic(err)
 	}
-
-	timeFormat := config.Conf.Env.TimeFormat
+	
 	out := os.Stdout
 
 	if config.Conf.Env.Mode != "local" {
@@ -26,14 +26,11 @@ func NewLogger() *zerolog.Logger {
 	}
 
 	writer := zerolog.ConsoleWriter{
-		Out:        out,
-		TimeFormat: timeFormat,
+		Out:          out,
+		TimeFormat:   config.Conf.Env.TimeFormat,
+		TimeLocation: loc,
 		FormatTimestamp: func(i interface{}) string {
-			t, ok := i.(time.Time)
-			if !ok {
-				return "invalid-time"
-			}
-			return t.In(loc).Format(timeFormat)
+			return fmt.Sprintf("[ %v ]", i)
 		},
 	}
 

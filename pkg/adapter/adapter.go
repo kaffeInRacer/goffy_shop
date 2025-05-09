@@ -1,10 +1,8 @@
-package server
+package adapter
 
-import (
-	"context"
-)
+import "context"
 
-type Server interface {
+type Adapter interface {
 	Start(context.Context) error
 	Stop(context.Context) error
 }

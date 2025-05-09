@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS orders (
+  id BIGSERIAL PRIMARY KEY,
+  user_id ulid NOT NULL
+    REFERENCES users(id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT,
+  order_detail_id BIGINT NOT NULL
+    REFERENCES order_detail(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  amount DOUBLE PRECISION NOT NULL,
+  total_qty INTEGER NOT NULL,
+  status INTEGER NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT now(),
+  updated_at TIMESTAMP NOT NULL DEFAULT now()
+);

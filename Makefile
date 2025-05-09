@@ -4,7 +4,7 @@ endif
 
 export $(shell sed 's/=.*//' .env)
 
-migration_path ?= ./internal/infrastructure/db/postgres/migration
+migration_path ?= ./cmd/migration
 
 create-migrate:
 	@migrate create -ext sql -dir $(migration_path) $(sql)

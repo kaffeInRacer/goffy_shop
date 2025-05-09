@@ -2,31 +2,37 @@ package main
 
 import (
 	"context"
+	"github.com/gin-gonic/gin"
+	"github.com/kaffein/goffy/pkg/adapter/postgre"
 	"github.com/kaffein/goffy/pkg/app"
 	"github.com/kaffein/goffy/pkg/config"
 	"github.com/kaffein/goffy/pkg/logger"
-	grpcServer "github.com/kaffein/goffy/pkg/server/grpc"
-	httpServer "github.com/kaffein/goffy/pkg/server/http"
-
-	"github.com/gin-gonic/gin"
+	grpcServer "github.com/kaffein/goffy/pkg/server/gRPC"
+	httpServer "github.com/kaffein/goffy/pkg/server/net_http"
 )
 
 func init() {
-	config.NewConfig("./config/local.yml")
+	config.LoadConfig("./config/local.yml")
 }
 
 func main() {
-	// Logger config
 	log := logger.NewLogger()
 
-	// Init Gin router
-	router := gin.Default()
-	router.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
-	})
+	// engine
+	engine := gin.Default()
+
+	// PostgreSQL
+	dbPg := postgre.NewDatabase(log,
+		postgre.WithHost(config.Conf.Database.Postgres.Host),
+		postgre.WithPort(config.Conf.Database.Postgres.Port),
+		postgre.WithUsername(config.Conf.Database.Postgres.User),
+		postgre.WithPassword(config.Conf.Database.Postgres.Password),
+		postgre.WithDBName(config.Conf.Database.Postgres.Name),
+		postgre.WithSSLMode(config.Conf.Database.Postgres.SSL),
+	)
 
 	// HTTP server
-	httpSrv := httpServer.NewServer(router, log,
+	httpSrv := httpServer.NewServer(engine, log,
 		httpServer.WithServerHost(config.Conf.Server.HTTP.Host),
 		httpServer.WithServerPort(config.Conf.Server.HTTP.Port),
 	)
@@ -37,13 +43,14 @@ func main() {
 		grpcServer.WithServerPort(config.Conf.Server.GRPC.Port),
 	)
 
-	// Compose app with servers
+	// Create application with all servers, adaptors, and router
 	application := app.NewApp(
 		app.WithName("goffy"),
+		app.WithAdapter(dbPg),
 		app.WithServer(httpSrv, grpcSrv),
+		app.WithRouter(engine),
 	)
 
-	// Run app
 	if err := application.Run(context.Background()); err != nil {
 		log.Fatal().Msg("App exited with error")
 	}

@@ -1,17 +1,17 @@
 env:
-  mode : local
-  time_zone : Asia/Jakarta
-  time_format : 2006-01-02 15:04:05.00
+  mode: local
+  time_zone: Asia/Jakarta
+  time_format: "2006-01-02 15:04:05.00"
 
 logger:
   log_level: info
   log_file_name: app_logger.log
 
 server:
-  http:
+  net_http:
     host: localhost
     port: 8080
-  grpc:
+  gRPC:
     host: localhost
     port: 9090
 
@@ -19,17 +19,18 @@ security:
   jwt:
     secret: secret
 
-data:
+database:
   postgres:
     host: localhost
     port: 5432
     user: postgres
-    pass: postgres
-    name: meh_goffy  # Database name
+    password: postgres
+    name: goffy
+    ssl: disable
   redis:
     host: localhost
     port: 6379
-    pass: redis
-    database: 0
+    password: redis
+    db: 0
     read_timeout: 200ms
     write_timeout: 200ms

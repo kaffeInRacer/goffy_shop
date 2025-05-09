@@ -40,6 +40,8 @@ func WithAdapter(adapters ...adapter.Adapter) Option {
 func WithServer(servers ...server.Server) Option {
 	return func(a *App) {
 		a.Servers = append(a.Servers, servers...)
+	}
+}
 
 func WithName(name string) Option {
 	return func(a *App) {

@@ -1,3 +1,5 @@
+// main.go
+
 package main
 
 import (
@@ -21,7 +23,7 @@ func main() {
 	// engine
 	engine := gin.Default()
 
-	// PostgreSQL
+	// Setup PostgreSQL
 	dbPg := postgre.NewDatabase(log,
 		postgre.WithHost(config.Conf.Database.Postgres.Host),
 		postgre.WithPort(config.Conf.Database.Postgres.Port),
@@ -31,13 +33,13 @@ func main() {
 		postgre.WithSSLMode(config.Conf.Database.Postgres.SSL),
 	)
 
-	// HTTP server
+	// Setup HTTP server
 	httpSrv := httpServer.NewServer(engine, log,
 		httpServer.WithServerHost(config.Conf.Server.HTTP.Host),
 		httpServer.WithServerPort(config.Conf.Server.HTTP.Port),
 	)
 
-	// gRPC server
+	// Setup gRPC server
 	grpcSrv := grpcServer.NewServer(log,
 		grpcServer.WithServerHost(config.Conf.Server.GRPC.Host),
 		grpcServer.WithServerPort(config.Conf.Server.GRPC.Port),
@@ -51,6 +53,7 @@ func main() {
 		app.WithRouter(engine),
 	)
 
+	// Run the application
 	if err := application.Run(context.Background()); err != nil {
 		log.Fatal().Msg("App exited with error")
 	}

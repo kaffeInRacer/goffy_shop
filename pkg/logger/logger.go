@@ -14,7 +14,8 @@ func NewLogger() *zerolog.Logger {
 	if err != nil {
 		panic(err)
 	}
-	
+
+	//timeFormat := config.Conf.Env.TimeFormat
 	out := os.Stdout
 
 	if config.Conf.Env.Mode != "local" {

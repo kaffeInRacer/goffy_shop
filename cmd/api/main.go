@@ -10,7 +10,7 @@ import (
 	"github.com/kaffein/goffy/pkg/config"
 	"github.com/kaffein/goffy/pkg/logger"
 	grpcServer "github.com/kaffein/goffy/pkg/server/gRPC"
-	httpServer "github.com/kaffein/goffy/pkg/server/http"
+	httpServer "github.com/kaffein/goffy/pkg/server/net_http"
 )
 
 func init() {

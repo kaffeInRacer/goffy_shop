@@ -22,7 +22,7 @@ type Config struct {
 		HTTP struct {
 			Host string `yaml:"host"`
 			Port int    `yaml:"port"`
-		} `yaml:"http"`
+		} `yaml:"net_http"`
 		GRPC struct {
 			Host string `yaml:"host"`
 			Port int    `yaml:"port"`
@@ -57,17 +57,17 @@ type Config struct {
 
 var Conf *Config
 
-func LoadConfig(path string) (*Config, error) {
+func LoadConfig(path string) error {
 	file, err := os.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(file, &cfg); err != nil {
-		return nil, err
+		return err
 	}
 
 	Conf = &cfg
-	return &cfg, nil
+	return nil
 }

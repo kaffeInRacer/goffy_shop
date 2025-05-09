@@ -1,4 +1,4 @@
-package http
+package net_http
 
 import (
 	"context"

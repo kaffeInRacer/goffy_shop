@@ -8,7 +8,7 @@ logger:
   log_file_name: app_logger.log
 
 server:
-  http:
+  net_http:
     host: localhost
     port: 8080
   gRPC:

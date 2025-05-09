@@ -1,10 +1,10 @@
 CREATE EXTENSION IF NOT EXISTS ulid;
 CREATE TYPE gender_type AS ENUM ('male', 'female');
 
--- Membuat tabel user
 CREATE TABLE IF NOT EXISTS users (
   id           ulid NOT NULL DEFAULT gen_ulid() PRIMARY KEY,
-  name         VARCHAR(255)    NOT NULL,
+  username     VARCHAR(255)    NOT NULL UNIQUE,
+  slug         varchar(255)    NOT NULL UNIQUE,
   email        VARCHAR(255)    NOT NULL UNIQUE,
   password     VARCHAR(255)    NOT NULL,
   role         VARCHAR(50)     NOT NULL,

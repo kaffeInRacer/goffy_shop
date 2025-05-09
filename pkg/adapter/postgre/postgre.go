@@ -78,7 +78,6 @@ func WithSSLMode(mode string) Option {
 	}
 }
 
-// Fungsi untuk membuka koneksi PostgreSQL secara global
 func (s *Adapter) Start(ctx context.Context) error {
 	once.Do(func() {
 		dsn := fmt.Sprintf(
@@ -86,7 +85,6 @@ func (s *Adapter) Start(ctx context.Context) error {
 			s.host, s.port, s.username, s.password, s.dbname, s.sslmode,
 		)
 
-		// Membuka koneksi ke PostgreSQL
 		var err error
 		db, err = sql.Open("postgres", dsn)
 		if err != nil {
@@ -94,7 +92,6 @@ func (s *Adapter) Start(ctx context.Context) error {
 			return
 		}
 
-		// Verifikasi koneksi dengan ping
 		if err := db.PingContext(ctx); err != nil {
 			s.logger.Fatal().Err(err).Msg("Failed to ping PostgreSQL database")
 			return
@@ -105,7 +102,6 @@ func (s *Adapter) Start(ctx context.Context) error {
 	return nil
 }
 
-// Fungsi untuk menghentikan koneksi
 func (s *Adapter) Stop(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
